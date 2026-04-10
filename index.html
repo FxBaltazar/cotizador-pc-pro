@@ -3,45 +3,84 @@
 <head>
 <meta charset="UTF-8">
 <title>Cotizador PRO</title>
-<link rel="stylesheet" href="css/style.css">
+
+<style>
+body{
+  font-family:Arial;
+  background:#020617;
+  color:white;
+  padding:20px;
+}
+
+select, input, button{
+  padding:8px;
+  margin:5px;
+}
+
+button{
+  background:#38bdf8;
+  border:none;
+  cursor:pointer;
+}
+
+.box{
+  background:#0f172a;
+  padding:15px;
+  border-radius:10px;
+  margin-top:15px;
+}
+</style>
 </head>
+
 <body>
 
 <h1>💻 Cotizador PRO</h1>
 
-<select id="modo">
-  <option value="uso">Uso + Gama</option>
-  <option value="presupuesto">Presupuesto + Uso</option>
-</select>
-
+<h2>🎯 Uso del equipo</h2>
 <select id="uso">
-  <option value="gaming">Gaming</option>
   <option value="oficina">Oficina</option>
   <option value="universidad">Universidad</option>
+  <option value="gaming">Gaming</option>
 </select>
 
+<h2>📊 Gama</h2>
 <select id="gama">
   <option value="baja">Baja</option>
   <option value="media">Media</option>
   <option value="alta">Alta</option>
 </select>
 
-<div id="presupuestoBox" style="display:none;">
-  <input type="number" id="presupuesto" placeholder="Presupuesto Bs">
-</div>
+<button onclick="cotizar()">Cotizar por Gama</button>
 
-<button onclick="cotizar()">Cotizar</button>
+<h2>💰 Cotizar por Presupuesto</h2>
+<input type="number" id="presupuesto" placeholder="Ej: 8000">
+<button onclick="cotizarPresupuesto()">Cotizar por Presupuesto</button>
+
+<div id="resultado" class="box"></div>
 
 <hr>
 
-<h2>🧩 Configuración</h2>
-<div id="config"></div>
+<h2>🔧 Ajuste Manual</h2>
 
-<h2>💰 Total</h2>
-<div id="total"></div>
+CPU:
+<select id="cpuManual"></select>
 
-<h2>⚠️ Sugerencias</h2>
-<div id="sugerencias"></div>
+GPU:
+<select id="gpuManual"></select>
+
+RAM:
+<select id="ramManual"></select>
+
+SSD:
+<select id="nvmeManual"></select>
+
+Fuente:
+<select id="fuenteManual"></select>
+
+<button onclick="aplicarCambios()">Aplicar Cambios</button>
+
+<div id="recomendaciones" class="box"></div>
+<div id="acciones" class="box"></div>
 
 <script src="data/productos.js"></script>
 <script src="js/script.js"></script>
