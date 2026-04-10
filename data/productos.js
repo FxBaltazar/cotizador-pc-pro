@@ -89,6 +89,8 @@ const ram = ordenarPrecio([
 {nombre:"BERACA 16GB 3600MHz", precio:1600, tipo:"DDR4", capacidad:16, velocidad:3600, nivel:2},
 {nombre:"BERACA 32GB 3600MHz", precio:3000, tipo:"DDR4", capacidad:32, velocidad:3600, nivel:3}
 
+
+
 ]);
 
 // ================== GPU ==================
@@ -352,17 +354,4 @@ const aire = ordenarPrecio([
 
 ]);
 
-// ================== EXPORT GLOBAL ==================
-const productos = {
-  nvme,
-  sata,
-  ram,
-  gpu,
-  fuentes,
-  cpu,
-  placas,
-  liquida,
-  aire
-    
-  export { productos };
-};
+const productos = {cpu,gpu,ram,placas,nvme,fuentes,aire};
