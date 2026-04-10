@@ -87,11 +87,7 @@ const ram = ordenarPrecio([
 
 {nombre:"BERACA 8GB 3600MHz", precio:1000, tipo:"DDR4", capacidad:8, velocidad:3600, nivel:1},
 {nombre:"BERACA 16GB 3600MHz", precio:1600, tipo:"DDR4", capacidad:16, velocidad:3600, nivel:2},
-{nombre:"BERACA 32GB 3600MHz", precio:3000, tipo:"DDR4", capacidad:32, velocidad:3600, nivel:3},
-
-/******** ANTIGUO (NO USAR EN COTIZADOR) ********/
-{nombre:"DDR3 8GB 1600MHz", precio:450, tipo:"DDR3", capacidad:8, legacy:true},
-{nombre:"DDR2 2GB 800MHz", precio:300, tipo:"DDR2", capacidad:2, legacy:true}
+{nombre:"BERACA 32GB 3600MHz", precio:3000, tipo:"DDR4", capacidad:32, velocidad:3600, nivel:3}
 
 ]);
 
