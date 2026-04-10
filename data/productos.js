@@ -157,3 +157,4 @@ const placas = [
 {nombre:"ROG STRIX B860-A GAMING WIFI",socket:"LGA1851",precio:3350},
 {nombre:"ROG STRIX B860-F GAMING WIFI",socket:"LGA1851",precio:3550}
 ];
+};
