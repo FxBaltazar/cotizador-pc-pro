@@ -1,19 +1,89 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Cotizador PC</title>
+<meta charset="UTF-8">
+<title>Cotizador PRO</title>
+
+<style>
+body{
+  font-family:Arial;
+  background:#020617;
+  color:white;
+  padding:20px;
+}
+
+select, input, button{
+  padding:8px;
+  margin:5px;
+}
+
+button{
+  background:#38bdf8;
+  border:none;
+  cursor:pointer;
+}
+
+.box{
+  background:#0f172a;
+  padding:15px;
+  border-radius:10px;
+  margin-top:15px;
+}
+</style>
 </head>
+
 <body>
 
-<h2>💻 Cotizador Inteligente</h2>
+<h1>💻 Cotizador PRO</h1>
 
-<input type="number" id="presupuesto" placeholder="Ej: 11000">
-<button onclick="generarPC()">Generar PC</button>
+<h2>🎯 Uso del equipo</h2>
+<select id="uso">
+  <option value="oficina">Oficina</option>
+  <option value="universidad">Universidad</option>
+  <option value="gaming">Gaming</option>
+</select>
 
-<div id="resultado"></div>
+<h2>📊 Gama</h2>
+<select id="gama">
+  <option value="baja">Baja</option>
+  <option value="media">Media</option>
+  <option value="alta">Alta</option>
+</select>
 
-<script type="module" src="./js/script.js"></script>
+<button onclick="cotizar()">Cotizar por Gama</button>
+
+<h2>💰 Cotizar por Presupuesto</h2>
+<input type="number" id="presupuesto" placeholder="Ej: 8000">
+<button onclick="cotizarPresupuesto()">Cotizar por Presupuesto</button>
+
+<div id="resultado" class="box"></div>
+
+<hr>
+
+<h2>🔧 Ajuste Manual</h2>
+
+CPU:
+<select id="cpuManual"></select>
+
+GPU:
+<select id="gpuManual"></select>
+
+RAM:
+<select id="ramManual"></select>
+
+SSD:
+<select id="nvmeManual"></select>
+
+Fuente:
+<select id="fuenteManual"></select>
+
+<button onclick="aplicarCambios()">Aplicar Cambios</button>
+
+<div id="recomendaciones" class="box"></div>
+<div id="acciones" class="box"></div>
+
+<script src="data/productos.js"></script>
+<script src="js/script.js"></script>
 
 </body>
 </html>
