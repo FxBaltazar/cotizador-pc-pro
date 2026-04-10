@@ -367,4 +367,6 @@ const productos = {
   placas,
   liquida,
   aire
+    
+  export { productos };
 };
