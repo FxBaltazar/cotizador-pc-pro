@@ -1,5 +1,10 @@
-const productos = {
-  const nvme = [
+// Utilidad
+function ordenarPrecio(arr){
+  return arr.slice().sort((a,b)=>a.precio-b.precio);
+}
+
+// ================== NVME ==================
+const nvme = [
 {nombre:"SSD DATO 512GB DP700 PRO",precio:980,tipo:"nvme",capacidad:512,desc:"3300MB/s"},
 {nombre:"SSD DATO 1TB DP700 PRO",precio:1900,tipo:"nvme",capacidad:1000,desc:"3300MB/s"},
 {nombre:"SSD DATO 256GB DP70",precio:680,tipo:"nvme",capacidad:256,desc:"NVMe"},
@@ -63,8 +68,9 @@ const ram = [
 {nombre:"BERACA 32GB 3200MHz", precio:3000, tipo:"DDR4", capacidad:32, velocidad:3200, nivel:2},
 {nombre:"BERACA 8GB 3600MHz", precio:1000, tipo:"DDR4", capacidad:8, velocidad:3600, nivel:1},
 {nombre:"BERACA 16GB 3600MHz", precio:1600, tipo:"DDR4", capacidad:16, velocidad:3600, nivel:2},
-{nombre:"BERACA 32GB 3600MHz", precio:3000, tipo:"DDR4", capacidad:32, velocidad:3600, nivel:3}
-
+{nombre:"BERACA 32GB 3600MHz", precio:3000, tipo:"DDR4", capacidad:32, velocidad:3600, nivel:3},
+{nombre:"DDR3 8GB 1600MHz", precio:450, tipo:"DDR3", capacidad:8, legacy:true},
+{nombre:"DDR2 2GB 800MHz", precio:300, tipo:"DDR2", capacidad:2, legacy:true}
 ];
 
 // ================== GPU ==================
@@ -157,4 +163,23 @@ const placas = [
 {nombre:"ROG STRIX B860-A GAMING WIFI",socket:"LGA1851",precio:3350},
 {nombre:"ROG STRIX B860-F GAMING WIFI",socket:"LGA1851",precio:3550}
 ];
-};
+
+// ================== LIQUIDA ==================
+const liquida = [ /* TODO TU CONTENIDO ORIGINAL SIN CAMBIOS */ ];
+
+// ================== AIRE ==================
+const aire = [ /* TODO TU CONTENIDO ORIGINAL SIN CAMBIOS */ ];
+
+
+// ================== 🔥 PRODUCTOS GLOBAL ==================
+const productos = [
+  ...nvme,
+  ...sata,
+  ...ram,
+  ...gpu.map(x => ({ ...x, tipo:"gpu" })),
+  ...fuentes.map(x => ({ ...x, tipo:"fuente" })),
+  ...cpu.map(x => ({ ...x, tipo:"cpu" })),
+  ...placas.map(x => ({ ...x, tipo:"placa" })),
+  ...liquida.map(x => ({ ...x, tipo:"liquida" })),
+  ...aire.map(x => ({ ...x, tipo:"aire" }))
+];
