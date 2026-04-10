@@ -49,31 +49,87 @@ function cotizarPresupuesto(){
 // ================= GENERAR CONFIG =================
 function generarConfig(presupuesto, uso){
 
-  if(!productos){
-    alert("❌ Productos no cargados");
-    return;
-  }
+  let p = presupuesto;
 
-  let cpu = elegir(productos.cpu, presupuesto*0.25);
+  // 🎯 DISTRIBUCIÓN INTELIGENTE
+  let dist = {
+    gaming:     {cpu:0.25, gpu:0.40, ram:0.12, nvme:0.08, fuente:0.10, cooler:0.05},
+    universidad:{cpu:0.35, gpu:0.15, ram:0.20, nvme:0.10, fuente:0.10, cooler:0.10},
+    oficina:    {cpu:0.40, gpu:0.00, ram:0.20, nvme:0.15, fuente:0.15, cooler:0.10}
+  };
 
+  let d = dist[uso];
+
+  // 🧠 CPU
+  let cpu = elegir(productos.cpu, p*d.cpu);
+
+  // 🧩 PLACA compatible SIEMPRE
   let placa = productos.placas.find(p=>p.socket===cpu.socket) || productos.placas[0];
 
-  let usarGPU = uso==="gaming";
-  let gpu = usarGPU ? elegir(productos.gpu, presupuesto*0.3) : null;
+  // 🎮 GPU (FILTRADA)
+  let gpu = null;
+  if(uso==="gaming"){
+    let opcionesGPU = productos.gpu.filter(g => g.nivel >= 2); // mata GT 730 💀
+    gpu = elegir(opcionesGPU, p*d.gpu);
+  }
 
-  let ram = elegir(productos.ram, presupuesto*0.1);
-  let nvme = elegir(productos.nvme, presupuesto*0.1);
-  let fuente = elegir(productos.fuentes, presupuesto*0.1);
+  // 🧠 RAM mínima inteligente
+  let ramMin = uso==="gaming" ? 16 : 8;
+  let opcionesRAM = productos.ram.filter(r => r.capacidad >= ramMin);
+  let ram = elegir(opcionesRAM, p*d.ram);
 
-  let cooler = presupuesto>8000 
-    ? elegir(productos.liquida, presupuesto*0.1) 
-    : elegir(productos.aire, presupuesto*0.05);
+  // ⚡ SSD mínimo
+  let opcionesNVME = productos.nvme.filter(n => n.capacidad >= 500);
+  let nvme = elegir(opcionesNVME, p*d.nvme);
+
+  // 🔌 FUENTE segura
+  let wattsMin = gpu ? 650 : 500;
+  let opcionesFuente = productos.fuentes.filter(f => f.watts >= wattsMin);
+  let fuente = elegir(opcionesFuente, p*d.fuente);
+
+  // ❄️ COOLER lógico
+  let cooler;
+  if(cpu.precio > 2500){
+    cooler = elegir(productos.liquida, p*d.cooler);
+  } else {
+    cooler = elegir(productos.aire, p*d.cooler);
+  }
 
   configActual = {cpu,placa,gpu,ram,nvme,fuente,cooler};
 
   recalcular();
+  optimizarRestante(presupuesto); // 🔥 NUEVO
   analizar();
   mostrar();
+}
+function optimizarRestante(presupuesto){
+
+  let c = configActual;
+
+  let restante = presupuesto - c.total;
+
+  // 💡 si sobra dinero → mejora GPU primero
+  if(c.gpu){
+    let mejorGPU = productos.gpu
+      .filter(g => g.precio > c.gpu.precio && g.precio <= c.gpu.precio + restante)
+      .sort((a,b)=>b.nivel-a.nivel)[0];
+
+    if(mejorGPU){
+      c.gpu = mejorGPU;
+      recalcular();
+      return;
+    }
+  }
+
+  // 💡 luego RAM
+  let mejorRAM = productos.ram
+    .filter(r => r.capacidad > c.ram.capacidad && r.precio <= c.ram.precio + restante)
+    .sort((a,b)=>b.capacidad-a.capacidad)[0];
+
+  if(mejorRAM){
+    c.ram = mejorRAM;
+    recalcular();
+  }
 }
 
 // ================= MOSTRAR =================
