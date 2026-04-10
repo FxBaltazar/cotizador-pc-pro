@@ -1,53 +1,84 @@
-function elegirCPU(presupuesto){
-  if(presupuesto < 4000) return productos.cpu[0];
-  if(presupuesto < 7000) return productos.cpu[2];
-  return productos.cpu[3];
+// ================= INIT =================
+const cpuSelect = document.getElementById("cpuSelect");
+const gpuSelect = document.getElementById("gpuSelect");
+const ramSelect = document.getElementById("ramSelect");
+const placaSelect = document.getElementById("placaSelect");
+
+let buildActual = {};
+
+// ================= CARGAR SELECTS =================
+function cargarOpciones(){
+  productos.cpu.forEach((c,i)=>{
+    cpuSelect.innerHTML += `<option value="${i}">${c.nombre}</option>`;
+  });
+
+  productos.gpu.forEach((g,i)=>{
+    gpuSelect.innerHTML += `<option value="${i}">${g.nombre}</option>`;
+  });
+
+  productos.ram.forEach((r,i)=>{
+    ramSelect.innerHTML += `<option value="${i}">${r.nombre}</option>`;
+  });
+
+  productos.placas.forEach((p,i)=>{
+    placaSelect.innerHTML += `<option value="${i}">${p.nombre}</option>`;
+  });
 }
 
-function elegirPlaca(cpu){
-  return productos.placas.find(p=>p.socket === cpu.socket);
+// ================= IA =================
+
+function armarPorUso(uso, gama){
+  let pc = {};
+
+  if(uso === "gaming"){
+    if(gama === "baja"){
+      pc.cpu = productos.cpu[0];
+      pc.gpu = null;
+    }
+    if(gama === "media"){
+      pc.cpu = productos.cpu[1];
+      pc.gpu = productos.gpu[0];
+    }
+    if(gama === "alta"){
+      pc.cpu = productos.cpu[2];
+      pc.gpu = productos.gpu[1];
+    }
+  }
+
+  if(uso === "oficina"){
+    pc.cpu = productos.cpu[0];
+    pc.gpu = null;
+  }
+
+  completarBuild(pc);
+  return pc;
 }
 
-function elegirRAM(cpu){
-  if(cpu.socket === "AM5") return productos.ram.find(r=>r.tipo==="DDR5");
-  return productos.ram.find(r=>r.tipo==="DDR4");
+function armarPorPresupuesto(presupuesto, uso){
+  let pc = {};
+
+  pc.cpu = presupuesto < 7000 ? productos.cpu[0] : productos.cpu[2];
+  pc.gpu = (uso === "gaming" && presupuesto > 6000) ? productos.gpu[0] : null;
+
+  completarBuild(pc);
+  return pc;
 }
 
-function elegirGPU(presupuesto, cpu){
-  if(cpu.graficos && presupuesto < 6000) return null;
-  if(presupuesto < 8000) return productos.gpu[0];
-  return productos.gpu[1];
+function completarBuild(pc){
+  pc.placa = productos.placas.find(p=>p.socket === pc.cpu.socket);
+
+  if(pc.cpu.socket === "AM5"){
+    pc.ram = productos.ram.find(r=>r.tipo==="DDR5");
+  } else {
+    pc.ram = productos.ram.find(r=>r.tipo==="DDR4");
+  }
+
+  pc.ssd = productos.nvme[1];
+  pc.fuente = pc.gpu ? productos.fuentes[1] : productos.fuentes[0];
+  pc.cooler = productos.aire[0];
 }
 
-function elegirSSD(presupuesto){
-  if(presupuesto < 6000) return productos.nvme[0];
-  if(presupuesto < 9000) return productos.nvme[1];
-  return productos.nvme[2];
-}
-
-function elegirFuente(gpu){
-  if(!gpu) return productos.fuentes[0];
-  if(gpu.nivel >= 3) return productos.fuentes[2];
-  return productos.fuentes[1];
-}
-
-function elegirCooler(){
-  return productos.aire[0];
-}
-
-function armarPC(presupuesto){
-  let build = {};
-
-  build.cpu = elegirCPU(presupuesto);
-  build.placa = elegirPlaca(build.cpu);
-  build.ram = elegirRAM(build.cpu);
-  build.gpu = elegirGPU(presupuesto, build.cpu);
-  build.ssd = elegirSSD(presupuesto);
-  build.fuente = elegirFuente(build.gpu);
-  build.cooler = elegirCooler();
-
-  return build;
-}
+// ================= MOSTRAR =================
 
 function calcularTotal(pc){
   return Object.values(pc)
@@ -55,8 +86,8 @@ function calcularTotal(pc){
     .reduce((acc,x)=>acc + x.precio,0);
 }
 
-function mostrarPC(pc){
-  let texto = `
+function mostrar(pc){
+  let txt = `
 🧠 ${pc.cpu.nombre}
 🧩 ${pc.placa.nombre}
 🧠 ${pc.ram.nombre}
@@ -65,20 +96,83 @@ function mostrarPC(pc){
 ❄️ ${pc.cooler.nombre}
 `;
 
-  if(pc.gpu){
-    texto += `🎮 ${pc.gpu.nombre}\n`;
-  } else {
-    texto += `🎮 Gráficos integrados\n`;
+  txt += pc.gpu ? `🎮 ${pc.gpu.nombre}` : `🎮 Integrados`;
+
+  txt += `\n\n💰 ${calcularTotal(pc)} Bs`;
+
+  document.getElementById("resultado").innerText = txt;
+
+  verificarCompatibilidad(pc);
+}
+
+// ================= IA COMPATIBILIDAD =================
+
+function verificarCompatibilidad(pc){
+  let problemas = [];
+
+  if(pc.placa.socket !== pc.cpu.socket){
+    problemas.push("⚠️ CPU y placa no compatibles");
   }
 
-  texto += `\n💰 TOTAL: ${calcularTotal(pc)} Bs`;
+  if(pc.cpu.socket === "AM5" && pc.ram.tipo !== "DDR5"){
+    problemas.push("⚠️ Debes usar DDR5");
+  }
 
-  document.getElementById("resultado").innerText = texto;
+  if(pc.cpu.graficos && pc.gpu){
+    problemas.push("💡 CPU tiene gráficos integrados, GPU no necesaria");
+  }
+
+  document.getElementById("sugerencias").innerText =
+    problemas.length ? problemas.join("\n") : "✅ Todo compatible";
 }
 
-// BOTÓN
-function cotizar(){
+// ================= EVENTOS =================
+
+document.getElementById("btnCotizar").addEventListener("click", ()=>{
+  const modo = document.getElementById("modo").value;
+  const uso = document.getElementById("uso").value;
+  const gama = document.getElementById("gama").value;
   const presupuesto = parseInt(document.getElementById("presupuesto").value);
-  const pc = armarPC(presupuesto);
-  mostrarPC(pc);
+
+  if(modo === "uso"){
+    buildActual = armarPorUso(uso,gama);
+  } else {
+    buildActual = armarPorPresupuesto(presupuesto,uso);
+  }
+
+  actualizarSelects();
+  mostrar(buildActual);
+});
+
+// ================= CAMBIO MANUAL =================
+
+function actualizarSelects(){
+  cpuSelect.value = productos.cpu.indexOf(buildActual.cpu);
+  gpuSelect.value = buildActual.gpu ? productos.gpu.indexOf(buildActual.gpu) : "";
+  ramSelect.value = productos.ram.indexOf(buildActual.ram);
+  placaSelect.value = productos.placas.indexOf(buildActual.placa);
 }
+
+cpuSelect.addEventListener("change", ()=>{
+  buildActual.cpu = productos.cpu[cpuSelect.value];
+  completarBuild(buildActual);
+  mostrar(buildActual);
+});
+
+gpuSelect.addEventListener("change", ()=>{
+  buildActual.gpu = productos.gpu[gpuSelect.value];
+  mostrar(buildActual);
+});
+
+ramSelect.addEventListener("change", ()=>{
+  buildActual.ram = productos.ram[ramSelect.value];
+  mostrar(buildActual);
+});
+
+placaSelect.addEventListener("change", ()=>{
+  buildActual.placa = productos.placas[placaSelect.value];
+  mostrar(buildActual);
+});
+
+// INIT
+cargarOpciones();
