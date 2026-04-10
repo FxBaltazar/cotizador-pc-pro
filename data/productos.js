@@ -1,4 +1,4 @@
-// ================== UTILIDAD ==================
+
 function ordenarPrecio(arr){
   return arr.sort((a,b)=>a.precio-b.precio);
 }
@@ -88,8 +88,6 @@ const ram = ordenarPrecio([
 {nombre:"BERACA 8GB 3600MHz", precio:1000, tipo:"DDR4", capacidad:8, velocidad:3600, nivel:1},
 {nombre:"BERACA 16GB 3600MHz", precio:1600, tipo:"DDR4", capacidad:16, velocidad:3600, nivel:2},
 {nombre:"BERACA 32GB 3600MHz", precio:3000, tipo:"DDR4", capacidad:32, velocidad:3600, nivel:3}
-
-
 
 ]);
 
@@ -354,4 +352,15 @@ const aire = ordenarPrecio([
 
 ]);
 
-const productos = {cpu,gpu,ram,placas,nvme,fuentes,aire};
+// ================== EXPORT GLOBAL ==================
+const productos = {
+  nvme,
+  sata,
+  ram,
+  gpu,
+  fuentes,
+  cpu,
+  placas,
+  liquida,
+  aire
+};
