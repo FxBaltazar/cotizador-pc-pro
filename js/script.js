@@ -40,23 +40,23 @@ function elegirPlaca(cpuSel){
 function elegirRAM(placa, perfil){
   let tipo = tipoRAM(placa.socket);
 
-  return ram.find(r=>
-    r.tipo===tipo &&
-    !r.legacy &&
-    r.capacidad>=perfil.ramMin
+  return ram.find(r =>
+    r.tipo === tipo &&
+    r.capacidad >= perfil.ramMin
   );
 }
 
 function elegirGPU(cpuSel, nivel, presupuesto){
   let igpu = esAPU(cpuSel);
 
+  // Si es APU y presupuesto bajo → no GPU
   if(igpu && presupuesto < 9000){
     return null;
   }
 
-  return gpu.find(g=>
-    g.nivel>=nivel &&
-    g.precio<=presupuesto*0.35
+  return gpu.find(g =>
+    g.nivel >= nivel &&
+    g.precio <= presupuesto * 0.35
   ) || null;
 }
 
@@ -106,11 +106,11 @@ function ajustar(build, presupuesto){
 
   let t = total(build);
 
-  // mejorar GPU si sobra presupuesto
-  while(t < presupuesto*0.9){
-    let mejor = gpu.find(g=>
-      (!build.gpu || g.precio>build.gpu.precio) &&
-      g.precio<=presupuesto*0.4
+  // Mejorar GPU si sobra presupuesto
+  while(t < presupuesto * 0.9){
+    let mejor = gpu.find(g =>
+      (!build.gpu || g.precio > build.gpu.precio) &&
+      g.precio <= presupuesto * 0.4
     );
 
     if(!mejor) break;
@@ -119,11 +119,11 @@ function ajustar(build, presupuesto){
     t = total(build);
   }
 
-  // bajar GPU si se pasa
+  // Bajar GPU si se pasa
   while(t > presupuesto){
     if(build.gpu){
       let menor = [...gpu].reverse()
-        .find(g=>g.precio < build.gpu.precio);
+        .find(g => g.precio < build.gpu.precio);
 
       build.gpu = menor || null;
     } else break;
@@ -141,8 +141,16 @@ function generarOpciones(presupuesto){
 
   return {
     balanceado: ajustar({...base}, presupuesto),
-    gaming: ajustar({...base, gpu: gpu.find(g=>g.nivel>=3)}, presupuesto),
-    productividad: ajustar({...base, cpu: cpu.find(c=>c.precio>base.cpu.precio)}, presupuesto)
+
+    gaming: ajustar({
+      ...base,
+      gpu: gpu.find(g=>g.nivel>=3)
+    }, presupuesto),
+
+    productividad: ajustar({
+      ...base,
+      cpu: cpu.find(c=>c.precio>base.cpu.precio)
+    }, presupuesto)
   };
 }
 
