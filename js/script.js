@@ -1,244 +1,154 @@
-let configActual = {};
+// ================= UI =================
 
-// ================= ORDENAR =================
-function ordenarPrecio(lista){
-  return [...lista].sort((a,b)=>a.precio-b.precio);
+document.getElementById("modo").addEventListener("change", ()=>{
+  document.getElementById("presupuestoBox").style.display =
+    document.getElementById("modo").value === "presupuesto" ? "block":"none";
+});
+
+// ================= IA BASE =================
+
+function elegirCPU(gama){
+  if(gama==="baja") return productos.cpu[0];
+  if(gama==="media") return productos.cpu[1];
+  return productos.cpu[2];
 }
 
-// ================= UTIL =================
-function elegir(lista, presupuesto){
-  return lista.reduce((acc,item)=> item.precio<=presupuesto?item:acc, lista[0]);
+function elegirGPU(uso, gama){
+  if(uso!=="gaming") return null;
+  if(gama==="baja") return null;
+  if(gama==="media") return productos.gpu[0];
+  return productos.gpu[1];
 }
 
-// ================= USO =================
-function ajustarPorUso(uso, presupuesto){
-  if(uso==="gaming") return presupuesto;
-  if(uso==="universidad") return presupuesto*0.8;
-  if(uso==="oficina") return presupuesto*0.6;
+// ================= ARMADO =================
+
+function armarPC(uso,gama){
+  let pc = {};
+
+  pc.cpu = elegirCPU(gama);
+  pc.gpu = elegirGPU(uso,gama);
+
+  pc.placa = productos.placas.find(p=>p.socket===pc.cpu.socket);
+
+  pc.ram = productos.ram.find(r=>
+    pc.cpu.socket==="AM5"? r.tipo==="DDR5":r.tipo==="DDR4"
+  );
+
+  pc.ssd = productos.nvme[1];
+  pc.fuente = pc.gpu?productos.fuentes[1]:productos.fuentes[0];
+  pc.cooler = productos.aire[0];
+
+  return pc;
 }
 
-// ================= COTIZAR =================
-function cotizar(){
+// ================= PRESUPUESTO =================
 
-  let uso = document.getElementById("uso").value;
-  let gama = document.getElementById("gama").value;
+function armarPorPresupuesto(presupuesto, uso){
+  let gama = "baja";
 
-  let base = {baja:4000,media:8000,alta:14000}[gama];
-  let presupuesto = ajustarPorUso(uso, base);
+  if(presupuesto>7000) gama="media";
+  if(presupuesto>12000) gama="alta";
 
-  generarConfig(presupuesto, uso);
+  return armarPC(uso,gama);
 }
 
-function cotizarPresupuesto(){
+// ================= TOTAL =================
 
-  let uso = document.getElementById("uso").value;
-  let dinero = parseInt(document.getElementById("presupuesto").value);
-
-  let presupuesto = ajustarPorUso(uso, dinero);
-
-  generarConfig(presupuesto, uso);
+function calcularTotal(pc){
+  return Object.values(pc)
+    .filter(x=>x)
+    .reduce((a,b)=>a+b.precio,0);
 }
 
-// ================= GENERAR CONFIG =================
-function generarConfig(presupuesto, uso){
+// ================= UI CONFIG =================
 
-  let cpu = elegir(productos.cpu, presupuesto*0.25);
-  let placa = productos.placas.find(p=>p.socket===cpu.socket);
+function mostrarConfig(pc){
 
-  let usarGPU = uso==="gaming";
-  let gpu = usarGPU ? elegir(productos.gpu, presupuesto*0.3) : null;
+  let html="";
 
-  let ram = elegir(productos.ram, presupuesto*0.1);
-  let nvme = elegir(productos.nvme, presupuesto*0.1);
-  let fuente = elegir(productos.fuentes, presupuesto*0.1);
+  for(let key in pc){
 
-  let cooler = presupuesto>8000 
-    ? elegir(productos.liquida, presupuesto*0.1) 
-    : elegir(productos.aire, presupuesto*0.05);
+    if(!pc[key]) continue;
 
-  let total = cpu.precio + placa.precio + ram.precio + nvme.precio + fuente.precio + cooler.precio;
-  if(gpu) total += gpu.precio;
+    let lista = productos[key] || [];
 
-  configActual = {cpu,placa,gpu,ram,nvme,fuente,cooler,total};
+    html+=`
+    <div>
+      <label>${key}</label>
+      <select onchange="cambiar('${key}', this.value)">
+        ${lista.map(p=>`
+          <option value="${p.nombre}" ${p.nombre===pc[key].nombre?"selected":""}>
+            ${p.nombre} - ${p.precio}
+          </option>
+        `).join("")}
+      </select>
+    </div>
+    `;
+  }
 
-  mostrar();
+  document.getElementById("config").innerHTML = html;
+  actualizarTotal(pc);
+  sugerencias(pc);
 }
 
-// ================= MOSTRAR =================
-function mostrar(){
+// ================= CAMBIO MANUAL =================
 
-  let c = configActual;
+let PC_GLOBAL={};
 
-  document.getElementById("resultado").innerHTML = `
-  🧠 ${c.cpu.nombre}<br>
-  🧩 ${c.placa.nombre}<br>
-  ${c.gpu ? "🎮 "+c.gpu.nombre : "🖥️ Integrada"}<br>
-  🧠 ${c.ram.nombre}<br>
-  ⚡ ${c.nvme.nombre}<br>
-  🔌 ${c.fuente.nombre}<br>
-  ❄️ ${c.cooler.nombre}<br><br>
+function cambiar(tipo, nombre){
+  let nuevo = productos[tipo].find(p=>p.nombre===nombre);
+  PC_GLOBAL[tipo]=nuevo;
 
-  💰 TOTAL: ${c.total} Bs
-  `;
+  actualizarTotal(PC_GLOBAL);
+  sugerencias(PC_GLOBAL);
 }
 
-// ================= SELECTORES =================
-function cargarSelect(id, lista){
-  let select = document.getElementById(id);
-  select.innerHTML = `<option value="">Auto</option>`;
+// ================= TOTAL UI =================
 
-  lista.forEach((item,i)=>{
-    let op = document.createElement("option");
-    op.value = i;
-    op.textContent = item.nombre + " - " + item.precio;
-    select.appendChild(op);
-  });
-}
-
-// ================= ONLOAD =================
-window.onload = ()=>{
-
-  productos.cpu = ordenarPrecio(productos.cpu);
-  productos.gpu = ordenarPrecio(productos.gpu);
-  productos.ram = ordenarPrecio(productos.ram);
-  productos.nvme = ordenarPrecio(productos.nvme);
-  productos.fuentes = ordenarPrecio(productos.fuentes);
-
-  cargarSelect("cpuManual", productos.cpu);
-  cargarSelect("gpuManual", productos.gpu);
-  cargarSelect("ramManual", productos.ram);
-  cargarSelect("nvmeManual", productos.nvme);
-  cargarSelect("fuenteManual", productos.fuentes);
-};
-
-// ================= CAMBIOS MANUALES =================
-function aplicarCambios(){
-
-  let cpu = document.getElementById("cpuManual").value;
-  let gpu = document.getElementById("gpuManual").value;
-  let ram = document.getElementById("ramManual").value;
-  let nvme = document.getElementById("nvmeManual").value;
-  let fuente = document.getElementById("fuenteManual").value;
-
-  if(cpu!=="") configActual.cpu = productos.cpu[cpu];
-  if(gpu!=="") configActual.gpu = productos.gpu[gpu];
-  if(ram!=="") configActual.ram = productos.ram[ram];
-  if(nvme!=="") configActual.nvme = productos.nvme[nvme];
-  if(fuente!=="") configActual.fuente = productos.fuentes[fuente];
-
-  recalcular();
-  analizar();
-  mostrar();
-}
-
-// ================= RECALCULAR =================
-function recalcular(){
-  let c = configActual;
-  c.total = c.cpu.precio + c.placa.precio + c.ram.precio + c.nvme.precio + c.fuente.precio + c.cooler.precio;
-  if(c.gpu) c.total += c.gpu.precio;
+function actualizarTotal(pc){
+  document.getElementById("total").innerText =
+    "Bs "+calcularTotal(pc);
 }
 
 // ================= SUGERENCIAS =================
-function analizar(){
 
-  let c = configActual;
-  let msg = "";
-  let acciones = "";
+function sugerencias(pc){
 
-  if(c.gpu && c.gpu.nivel>=4 && c.cpu.precio<2500){
-    msg += "⚠️ CPU limita GPU<br>";
+  let msg="";
 
-    let mejorCPU = productos.cpu.find(p=>p.precio>2500);
-
-    if(mejorCPU){
-      acciones += `
-      🔧 Mejorar CPU → ${mejorCPU.nombre}
-      <button onclick="aplicarSugerencia('cpu',${productos.cpu.indexOf(mejorCPU)})">Aplicar</button><br>
-      `;
-    }
+  if(pc.gpu && pc.cpu.nucleos<=4){
+    msg+="⚠️ CPU débil para esa GPU\n";
   }
 
-  if(c.cpu.precio>3000){
-    msg += "❄️ CPU potente requiere líquida<br>";
-
-    let mejorLiquida = productos.liquida[0];
-
-    acciones += `
-    🔧 Usar líquida → ${mejorLiquida.nombre}
-    <button onclick="aplicarSugerencia('cooler',${productos.liquida.indexOf(mejorLiquida)})">Aplicar</button><br>
-    `;
+  if(pc.gpu && pc.fuente.watts<600){
+    msg+="⚠️ Fuente insuficiente\n";
   }
 
-  if(c.gpu && c.gpu.nivel>=4 && c.fuente.watts<700){
-    msg += "⚡ Fuente insuficiente<br>";
-
-    let mejorFuente = productos.fuentes.find(f=>f.watts>=750);
-
-    acciones += `
-    🔧 Subir fuente → ${mejorFuente.nombre}
-    <button onclick="aplicarSugerencia('fuente',${productos.fuentes.indexOf(mejorFuente)})">Aplicar</button><br>
-    `;
+  if(pc.cpu.socket==="AM5" && pc.ram.tipo!=="DDR5"){
+    msg+="⚠️ RAM incompatible\n";
   }
 
-  if(c.gpu && c.gpu.nivel>=4 && c.ram.capacidad<16){
-    msg += "🧠 RAM insuficiente<br>";
-
-    let mejorRAM = productos.ram.find(r=>r.capacidad>=16);
-
-    acciones += `
-    🔧 Subir RAM → ${mejorRAM.nombre}
-    <button onclick="aplicarSugerencia('ram',${productos.ram.indexOf(mejorRAM)})">Aplicar</button><br>
-    `;
-  }
-
-  let placaCorrecta = productos.placas.find(p=>p.socket===c.cpu.socket);
-
-  if(placaCorrecta && placaCorrecta.nombre !== c.placa.nombre){
-    msg += "🧩 Cambiar placa<br>";
-
-    acciones += `
-    🔧 Cambiar placa → ${placaCorrecta.nombre}
-    <button onclick="aplicarSugerencia('placa',${productos.placas.indexOf(placaCorrecta)})">Aplicar</button><br>
-    `;
-  }
-
-  document.getElementById("recomendaciones").innerHTML = msg;
-  document.getElementById("acciones").innerHTML = acciones;
+  document.getElementById("sugerencias").innerText =
+    msg || "✔️ Todo equilibrado";
 }
 
-// ================= APLICAR SUGERENCIAS =================
-function aplicarSugerencia(tipo, index){
+// ================= BOTON =================
 
-  if(tipo==="cpu"){
-    configActual.cpu = productos.cpu[index];
-    configActual.placa = productos.placas.find(p=>p.socket===configActual.cpu.socket);
+function cotizar(){
+
+  let modo = document.getElementById("modo").value;
+  let uso = document.getElementById("uso").value;
+  let gama = document.getElementById("gama").value;
+  let presupuesto = parseInt(document.getElementById("presupuesto").value);
+
+  let pc;
+
+  if(modo==="uso"){
+    pc = armarPC(uso,gama);
+  } else {
+    pc = armarPorPresupuesto(presupuesto, uso);
   }
 
-  if(tipo==="gpu"){
-    configActual.gpu = productos.gpu[index];
-  }
-
-  if(tipo==="ram"){
-    configActual.ram = productos.ram[index];
-  }
-
-  if(tipo==="nvme"){
-    configActual.nvme = productos.nvme[index];
-  }
-
-  if(tipo==="fuente"){
-    configActual.fuente = productos.fuentes[index];
-  }
-
-  if(tipo==="cooler"){
-    configActual.cooler = productos.liquida[index];
-  }
-
-  if(tipo==="placa"){
-    configActual.placa = productos.placas[index];
-  }
-
-  recalcular();
-  analizar();
-  mostrar();
+  PC_GLOBAL = pc;
+  mostrarConfig(pc);
 }
