@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cotizador PRO</title>
+
+<style>
+body{
+  font-family: Arial;
+  background:#0f172a;
+  color:white;
+  margin:0;
+  padding:10px;
+}
+h1{text-align:center;}
+.box{
+  background:#1e293b;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+select,input,button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border-radius:8px;
+  border:none;
+}
+button{
+  background:#22c55e;
+  color:white;
+  font-weight:bold;
+}
+#resultado{
+  background:#020617;
+  padding:15px;
+  border-radius:12px;
+  margin-top:15px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>💻 Cotizador PRO</h1>
+
+<div class="box">
+<h2>Por Gama</h2>
+<select id="uso1">
+<option value="oficina">Oficina</option>
+<option value="gaming">Gaming</option>
+<option value="universidad">Universidad</option>
+</select>
+
+<select id="gama">
+<option value="baja">Baja</option>
+<option value="media">Media</option>
+<option value="alta">Alta</option>
+</select>
+
+<button onclick="cotizarAuto()">Cotizar</button>
+</div>
+
+<div class="box">
+<h2>Por Presupuesto</h2>
+<select id="uso2">
+<option value="oficina">Oficina</option>
+<option value="gaming">Gaming</option>
+<option value="universidad">Universidad</option>
+</select>
+
+<input type="number" id="presupuesto" placeholder="Presupuesto Bs">
+
+<button onclick="cotizarPresupuesto()">Cotizar</button>
+</div>
+
+<div id="resultado">Aquí aparecerá la cotización</div>
+
+<script src="productos.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
